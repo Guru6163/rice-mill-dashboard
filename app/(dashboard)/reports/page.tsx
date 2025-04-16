@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState, useMemo } from "react";
-import { getRiceMillRecords } from "../api/api";
+import { getRiceMillRecords } from "../../api/api";
 import {
   Table,
   TableBody,
