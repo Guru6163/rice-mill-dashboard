@@ -23,7 +23,7 @@ export function Navbar() {
   const navItems = [
     { name: "Dashboard", href: "/dashboard", icon: Home },
     { name: "Reports", href: "/reports", icon: BarChart2 },
-    { name: "Settings", href: "/settings", icon: Settings },
+    // { name: "Settings", href: "/settings", icon: Settings },
     { name: "Logout", href: "#", icon: HelpCircle }, // Logout link
   ];
 
