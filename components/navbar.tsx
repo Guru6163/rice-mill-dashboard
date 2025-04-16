@@ -4,15 +4,7 @@ import { useState } from "react";
 import Link from "next/link";
 import { signOut } from "firebase/auth";
 import { auth } from "@/lib/firebase"; // Import your Firebase auth object
-import {
-  Menu,
-  Home,
-  BarChart2,
-  FileText,
-  Settings,
-  HelpCircle,
-  User,
-} from "lucide-react";
+import { Menu, Home, BarChart2, HelpCircle } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
 
@@ -23,7 +15,7 @@ export function Navbar() {
   const navItems = [
     { name: "Dashboard", href: "/dashboard", icon: Home },
     { name: "Reports", href: "/reports", icon: BarChart2 },
-    // { name: "Settings", href: "/settings", icon: Settings },
+    { name: "Analytics", href: "/analytics", icon: BarChart2 },
     { name: "Logout", href: "#", icon: HelpCircle }, // Logout link
   ];
 
@@ -50,7 +42,6 @@ export function Navbar() {
             <span className="mt-1">Mill Board</span>
           </Link>
 
-          {/* Desktop Navigation */}
           <div className="hidden md:flex items-center justify-center space-x-6">
             {navItems.map((item) =>
               item.name === "Logout" ? (
@@ -58,16 +49,18 @@ export function Navbar() {
                   key={item.name}
                   onClick={handleLogout}
                   variant="link"
-                  className="flex items-center text-sm font-medium text-muted-foreground hover:text-primary transition-colors dark:text-zinc-400 dark:hover:text-white"
+                  className="flex items-center gap-2 text-sm font-medium text-muted-foreground hover:text-primary transition-colors dark:text-zinc-400 dark:hover:text-white"
                 >
+                  <item.icon className="h-4 w-4" />
                   {item.name}
                 </Button>
               ) : (
                 <Link
                   key={item.name}
                   href={item.href}
-                  className="flex items-center text-sm font-medium text-muted-foreground hover:text-primary transition-colors dark:text-zinc-400 dark:hover:text-white"
+                  className="flex items-center gap-2 text-sm font-medium text-muted-foreground hover:text-primary transition-colors dark:text-zinc-400 dark:hover:text-white"
                 >
+                  <item.icon className="h-4 w-4" />
                   {item.name}
                 </Link>
               )

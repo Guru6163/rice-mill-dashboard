@@ -10,7 +10,7 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardContent } from "@/components/ui/card";
 import { Loader2 } from "lucide-react";
 import {
   Select,
@@ -19,16 +19,6 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import {
-  LineChart,
-  Line,
-  XAxis,
-  YAxis,
-  CartesianGrid,
-  Tooltip,
-  Legend,
-  ResponsiveContainer,
-} from "recharts";
 import { format } from "date-fns";
 
 export default function RiceMillRecordsPage() {
@@ -42,7 +32,6 @@ export default function RiceMillRecordsPage() {
     const fetchRecords = async () => {
       try {
         const data = await getRiceMillRecords();
-        console.log(data)
         setRecords(data);
       } catch (err) {
         console.error("Error fetching records:", err);
@@ -57,18 +46,18 @@ export default function RiceMillRecordsPage() {
   const filteredData = useMemo(() => {
     const now = new Date();
     let fromDate;
-  
+
     if (filter === "last30") {
       fromDate = new Date(now);
       fromDate.setDate(now.getDate() - 30);
     } else if (filter === "thisMonth") {
       fromDate = new Date(now.getFullYear(), now.getMonth(), 1);
     } else if (filter === "thisWeek") {
-      const day = now.getDay(); // 0 (Sun) - 6 (Sat)
+      const day = now.getDay();
       fromDate = new Date(now);
       fromDate.setDate(now.getDate() - day);
     }
-  
+
     return records
       .filter((r) => {
         const date = r.createdAt?.toDate?.() || new Date(r.createdAt);
@@ -77,7 +66,7 @@ export default function RiceMillRecordsPage() {
       .sort((a, b) => {
         const da = a.createdAt?.toDate?.() || new Date(a.createdAt);
         const db = b.createdAt?.toDate?.() || new Date(b.createdAt);
-        return da.getTime() - db.getTime(); // ASC for chart ✅
+        return da.getTime() - db.getTime();
       })
       .map((r) => {
         const date = r.createdAt?.toDate?.() || new Date(r.createdAt);
@@ -87,15 +76,13 @@ export default function RiceMillRecordsPage() {
         };
       });
   }, [records, filter]);
-  
 
   const paginatedData = useMemo(() => {
-    const reversed = [...filteredData].reverse(); // DESC for table ✅
+    const reversed = [...filteredData].reverse();
     const start = (currentPage - 1) * recordsPerPage;
     const end = start + recordsPerPage;
     return reversed.slice(start, end);
   }, [filteredData, currentPage]);
-  
 
   if (loading) {
     return (
@@ -106,98 +93,20 @@ export default function RiceMillRecordsPage() {
   }
 
   return (
-    <div className="space-y-4">
+    <div className="space-y-6">
       <div className="flex items-center justify-between">
-        <h2 className="text-xl font-bold">Reports</h2>
-        <Select onValueChange={setFilter} defaultValue="last30">
-          <SelectTrigger className="w-[200px]">
-            <SelectValue placeholder="Filter" />
-          </SelectTrigger>
-          <SelectContent>
-            <SelectItem value="last30">Last 30 Days</SelectItem>
-            <SelectItem value="thisMonth">This Month</SelectItem>
-            <SelectItem value="thisWeek">This Week</SelectItem>
-          </SelectContent>
-        </Select>
+        <div className="text-2xl font-semibold text-gray-800">Reports</div>
       </div>
 
-      {/* Chart */}
-      <Card>
-        <CardHeader>
-          <CardTitle className="text-lg font-semibold">Overview</CardTitle>
-        </CardHeader>
-        <CardContent className="h-[350px]">
-          <ResponsiveContainer width="100%" height="100%">
-            <LineChart
-              data={filteredData}
-              margin={{ top: 20, right: 30, left: 0, bottom: 5 }}
-            >
-              <CartesianGrid stroke="#e5e7eb" strokeDasharray="3 3" />
-              <XAxis dataKey="label" tick={{ fontSize: 12 }} />
-              <YAxis tick={{ fontSize: 12 }} />
-              <Tooltip
-                contentStyle={{
-                  backgroundColor: "white",
-                  border: "1px solid #e5e7eb",
-                  borderRadius: 8,
-                  fontSize: 14,
-                }}
-              />
-              <Legend
-                verticalAlign="top"
-                height={36}
-                wrapperStyle={{ paddingBottom: "10px" }}
-                iconType="circle"
-              />
-              <Line
-                type="monotone"
-                dataKey="totalIncome"
-                stroke="#22c55e"
-                name="Income"
-                strokeWidth={2}
-                dot={{ r: 4 }}
-                activeDot={{ r: 6 }}
-              />
-              <Line
-                type="monotone"
-                dataKey="totalExpense"
-                stroke="#ef4444"
-                name="Expense"
-                strokeWidth={2}
-                dot={{ r: 4 }}
-                activeDot={{ r: 6 }}
-              />
-              <Line
-                type="monotone"
-                dataKey="riceBags"
-                stroke="#3b82f6"
-                name="Rice Bags"
-                strokeWidth={2}
-                dot={{ r: 4 }}
-                activeDot={{ r: 6 }}
-              />
-              <Line
-                type="monotone"
-                dataKey="totalOutTurn"
-                stroke="#facc15"
-                name="OutTurn"
-                strokeWidth={2}
-                dot={{ r: 4 }}
-                activeDot={{ r: 6 }}
-              />
-            </LineChart>
-          </ResponsiveContainer>
-        </CardContent>
-      </Card>
-
-      {/* Table */}
-      <Card>
+      <Card className="shadow-md">
         <CardContent className="overflow-x-auto p-0">
           <div className="overflow-x-auto">
-            <Table className="min-w-[800px]">
-              <TableHeader>
+            <Table className="min-w-[900px]">
+              <TableHeader className="">
                 <TableRow>
-                  <TableHead>Date</TableHead>
+                  <TableHead className="text-gray-600 font-semibold">
+                    Date
+                  </TableHead>
                   <TableHead>Total Expense</TableHead>
                   <TableHead>Total Income</TableHead>
                   <TableHead>Gross</TableHead>
@@ -207,8 +116,11 @@ export default function RiceMillRecordsPage() {
                 </TableRow>
               </TableHeader>
               <TableBody>
-                {paginatedData.map((record) => (
-                  <TableRow key={record.id}>
+                {paginatedData.map((record, idx) => (
+                  <TableRow
+                    key={record.id}
+                    className={idx % 2 === 0 ? "bg-white" : "bg-gray-50 hover:bg-gray-100 transition-colors"}
+                  >
                     <TableCell>{record.label}</TableCell>
                     <TableCell>₹{record.totalExpense.toFixed(2)}</TableCell>
                     <TableCell>₹{record.totalIncome.toFixed(2)}</TableCell>
@@ -221,9 +133,10 @@ export default function RiceMillRecordsPage() {
               </TableBody>
             </Table>
           </div>
+
           {/* Pagination */}
-          <div className="flex items-center justify-between p-4">
-            <span className="text-sm text-muted-foreground">
+          <div className="flex items-center justify-between p-4 bg-gray-50 border-t rounded-b-2xl">
+            <span className="text-sm text-gray-600">
               Page {currentPage} of{" "}
               {Math.ceil(filteredData.length / recordsPerPage)}
             </span>
@@ -231,7 +144,7 @@ export default function RiceMillRecordsPage() {
               <button
                 onClick={() => setCurrentPage((p) => Math.max(1, p - 1))}
                 disabled={currentPage === 1}
-                className="px-3 py-1 text-sm border rounded disabled:opacity-50"
+                className="px-4 py-1.5 text-sm rounded-lg border border-gray-300 hover:bg-gray-100 disabled:opacity-50 transition"
               >
                 Previous
               </button>
@@ -247,7 +160,7 @@ export default function RiceMillRecordsPage() {
                   currentPage ===
                   Math.ceil(filteredData.length / recordsPerPage)
                 }
-                className="px-3 py-1 text-sm border rounded disabled:opacity-50"
+                className="px-4 py-1.5 text-sm rounded-lg border border-gray-300 hover:bg-gray-100 disabled:opacity-50 transition"
               >
                 Next
               </button>
