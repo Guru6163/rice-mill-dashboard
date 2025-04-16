@@ -38,19 +38,21 @@ export function Navbar() {
   };
 
   return (
-    <nav className="sticky top-0 z-50 w-full border-b border-border bg-white/80 shadow-sm backdrop-blur supports-[backdrop-filter]:bg-white/60 dark:bg-zinc-900/80 dark:supports-[backdrop-filter]:bg-zinc-900/60 dark:border-zinc-700">
+    <nav className="sticky top-0 z-50 w-full border-b bg-white text-black shadow-md dark:bg-black dark:text-white">
       <div className="flex h-16 items-center justify-between px-4 md:px-10">
         {/* Brand */}
         <div className="w-full flex justify-between">
-          <Link href="/" className="flex items-center space-x-2">
-            <span className="text-lg font-bold tracking-tight text-primary dark:text-white">
-              SATHYA RICE MILL
-            </span>
+          <Link
+            href="/"
+            className="flex items-center space-x-3 text-lg tracking-tight text-primary dark:text-white"
+          >
+            <BarChart2 className="h-6 w-6" />
+            <span className="mt-1">Mill Board</span>
           </Link>
 
           {/* Desktop Navigation */}
           <div className="hidden md:flex items-center justify-center space-x-6">
-            {navItems.map((item) => (
+            {navItems.map((item) =>
               item.name === "Logout" ? (
                 <Button
                   key={item.name}
@@ -69,7 +71,7 @@ export function Navbar() {
                   {item.name}
                 </Link>
               )
-            ))}
+            )}
           </div>
         </div>
 
@@ -77,7 +79,11 @@ export function Navbar() {
         <div className="md:hidden">
           <Sheet open={isOpen} onOpenChange={setIsOpen}>
             <SheetTrigger asChild>
-              <Button variant="ghost" size="icon" className="rounded-md dark:text-white">
+              <Button
+                variant="ghost"
+                size="icon"
+                className="rounded-md dark:text-white"
+              >
                 <Menu className="h-5 w-5" />
               </Button>
             </SheetTrigger>
@@ -88,13 +94,13 @@ export function Navbar() {
               <div className="flex flex-col gap-6">
                 <Link
                   href="/"
-                  onClick={() => setIsOpen(false)}
-                  className="text-lg font-bold"
+                  className="flex items-center space-x-3 text-lg tracking-tight text-primary dark:text-white"
                 >
-                  SATHYA RICE MILL
+                  <BarChart2 className="h-6 w-6" />
+                  <span className="mt-1">Mill Board</span>
                 </Link>
                 <div className="flex flex-col gap-4">
-                  {navItems.map((item) => (
+                  {navItems.map((item) =>
                     item.name === "Logout" ? (
                       <Button
                         key={item.name}
@@ -116,7 +122,7 @@ export function Navbar() {
                         {item.name}
                       </Link>
                     )
-                  ))}
+                  )}
                 </div>
               </div>
             </SheetContent>
