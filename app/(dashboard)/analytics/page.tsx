@@ -107,22 +107,33 @@ export default function RiceMillAnalytics() {
         <CardContent className="h-72 md:h-80">
           <ResponsiveContainer width="100%" height="100%">
             <LineChart data={filteredData}>
-              <CartesianGrid strokeDasharray="3 3" />
-              <XAxis dataKey="label" tick={{ fontSize: 10 }} />
-              <YAxis tick={{ fontSize: 10 }} />
-              <Tooltip />
-              <Legend />
+              <CartesianGrid strokeDasharray="4 4" stroke="#e5e7eb" />
+              <XAxis dataKey="label" tick={{ fontSize: 12, fill: "#6b7280" }} />
+              <YAxis tick={{ fontSize: 12, fill: "#6b7280" }} />
+              <Tooltip
+                contentStyle={{
+                  backgroundColor: "#fff",
+                  borderRadius: 8,
+                  borderColor: "#e5e7eb",
+                }}
+                labelStyle={{ color: "#374151", fontWeight: 500 }}
+              />
+              <Legend verticalAlign="top" iconType="circle" />
               <Line
                 type="monotone"
                 dataKey="totalIncome"
-                stroke="#4ade80"
+                stroke="#22c55e"
                 name="Income"
+                strokeWidth={2}
+                dot={{ r: 3 }}
               />
               <Line
                 type="monotone"
                 dataKey="totalExpense"
-                stroke="#f87171"
+                stroke="#ef4444"
                 name="Expense"
+                strokeWidth={2}
+                dot={{ r: 3 }}
               />
             </LineChart>
           </ResponsiveContainer>
@@ -137,11 +148,24 @@ export default function RiceMillAnalytics() {
         <CardContent className="h-72 md:h-80">
           <ResponsiveContainer width="100%" height="100%">
             <BarChart data={filteredData}>
-              <CartesianGrid strokeDasharray="3 3" />
-              <XAxis dataKey="label" tick={{ fontSize: 10 }} />
-              <YAxis tick={{ fontSize: 10 }} />
-              <Tooltip />
-              <Bar dataKey="riceBags" fill="#60a5fa" />
+              <CartesianGrid strokeDasharray="4 4" stroke="#e5e7eb" />
+              <XAxis dataKey="label" tick={{ fontSize: 12, fill: "#6b7280" }} />
+              <YAxis tick={{ fontSize: 12, fill: "#6b7280" }} />
+              <Tooltip
+                contentStyle={{
+                  backgroundColor: "#fff",
+                  borderRadius: 8,
+                  borderColor: "#e5e7eb",
+                }}
+                labelStyle={{ color: "#374151", fontWeight: 500 }}
+              />
+              <Legend verticalAlign="top" iconType="circle" />
+              <Bar
+                dataKey="riceBags"
+                fill="#3b82f6"
+                name="Rice Bags"
+                radius={[6, 6, 0, 0]}
+              />
             </BarChart>
           </ResponsiveContainer>
         </CardContent>
@@ -155,15 +179,25 @@ export default function RiceMillAnalytics() {
         <CardContent className="h-72 md:h-80">
           <ResponsiveContainer width="100%" height="100%">
             <LineChart data={filteredData}>
-              <CartesianGrid strokeDasharray="3 3" />
-              <XAxis dataKey="label" tick={{ fontSize: 10 }} />
-              <YAxis tick={{ fontSize: 10 }} />
-              <Tooltip />
+              <CartesianGrid strokeDasharray="4 4" stroke="#e5e7eb" />
+              <XAxis dataKey="label" tick={{ fontSize: 12, fill: "#6b7280" }} />
+              <YAxis tick={{ fontSize: 12, fill: "#6b7280" }} />
+              <Tooltip
+                contentStyle={{
+                  backgroundColor: "#fff",
+                  borderRadius: 8,
+                  borderColor: "#e5e7eb",
+                }}
+                labelStyle={{ color: "#374151", fontWeight: 500 }}
+              />
+              <Legend verticalAlign="top" iconType="circle" />
               <Line
                 type="monotone"
                 dataKey="totalOutTurn"
-                stroke="#34d399"
+                stroke="#10b981"
                 name="OutTurn"
+                strokeWidth={2}
+                dot={{ r: 3 }}
               />
             </LineChart>
           </ResponsiveContainer>
