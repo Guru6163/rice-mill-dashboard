@@ -1,15 +1,13 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-  DialogFooter,
-} from "@/components/ui/dialog";
-
+  Card,
+  CardContent,
+  CardHeader,
+  CardTitle,
+  CardDescription,
+} from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -21,9 +19,17 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import { Plus, Trash2 } from "lucide-react";
+import { Plus, Trash2, DollarSign, Package, BarChart3 } from "lucide-react";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { collection, addDoc, Timestamp } from "firebase/firestore";
-import { db } from "@/lib/firebase"; 
+import { db } from "@/lib/firebase";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogFooter,
+} from "@/components/ui/dialog";
 
 type ExpenseItem = {
   id: string;
@@ -46,14 +52,28 @@ type OutputItem = {
   outTurn: number;
 };
 
-export default function page() {
-  const [expenses, setExpenses] = useState<ExpenseItem[]>([]);
-  const [incomes, setIncomes] = useState<IncomeItem[]>([]);
+export default function Page() {
+  const [expenses, setExpenses] = useState<ExpenseItem[]>([
+    { id: "1", name: "Paddy", qty: 0, rate: 0, amount: 0 },
+    { id: "2", name: "Mill Labour", qty: 0, rate: 0, amount: 0 },
+    { id: "3", name: "Other Expenses", qty: 0, rate: 0, amount: 0 },
+  ]);
+
+  const [incomes, setIncomes] = useState<IncomeItem[]>([
+    { id: "1", name: "Bran", qty: 0, rate: 0, amount: 0 },
+    { id: "2", name: "Broken Rice", qty: 0, rate: 0, amount: 0 },
+    { id: "3", name: "Black Rice", qty: 0, rate: 0, amount: 0 },
+    { id: "4", name: "Silky Bran", qty: 0, rate: 0, amount: 0 },
+    { id: "5", name: "Small Broken Rice", qty: 0, rate: 0, amount: 0 },
+    { id: "6", name: "Pather", qty: 0, rate: 0, amount: 0 },
+    { id: "7", name: "Extra", qty: 0, rate: 0, amount: 0 },
+  ]);
+
   const [outputs, setOutputs] = useState<OutputItem[]>([
-    { product: "RICE", outTurn: 0 },
-    { product: "BROKEN", outTurn: 0 },
-    { product: "BLACK RICE", outTurn: 0 },
-    { product: "HUSK", outTurn: 0 },
+    { product: "Rice", outTurn: 0 },
+    { product: "Broken", outTurn: 0 },
+    { product: "Black Rice", outTurn: 0 },
+    { product: "Husk", outTurn: 0 },
   ]);
 
   const [riceBags, setRiceBags] = useState<number>(0);
@@ -65,7 +85,6 @@ export default function page() {
 
   const [newExpenseName, setNewExpenseName] = useState<string>("");
   const [newIncomeName, setNewIncomeName] = useState<string>("");
-
   const [showSaveModal, setShowSaveModal] = useState(false);
 
   const handleSave = async () => {
@@ -93,7 +112,6 @@ export default function page() {
   };
 
   useEffect(() => {
-    // Calculate totals
     const expTotal = expenses.reduce((sum, item) => sum + item.amount, 0);
     const incTotal = incomes.reduce((sum, item) => sum + item.amount, 0);
     const gross = incTotal - expTotal;
@@ -107,16 +125,16 @@ export default function page() {
     setTotalOutTurn(outTurnTotal);
   }, [expenses, incomes, outputs, riceBags]);
 
-  const updateExpenseItem = (
+  const updateItem = <T extends ExpenseItem | IncomeItem>(
+    setFn: React.Dispatch<React.SetStateAction<T[]>>,
     id: string,
-    field: keyof ExpenseItem,
+    field: keyof T,
     value: any
   ) => {
-    setExpenses((prev) =>
+    setFn((prev) =>
       prev.map((item) => {
         if (item.id === id) {
           const updated = { ...item, [field]: value };
-          // Recalculate amount if qty or rate changes
           if (field === "qty" || field === "rate") {
             updated.amount = updated.qty * updated.rate;
           }
@@ -127,309 +145,240 @@ export default function page() {
     );
   };
 
-  const updateIncomeItem = (
-    id: string,
-    field: keyof IncomeItem,
-    value: any
+  const addItem = <T extends ExpenseItem | IncomeItem>(
+    setFn: React.Dispatch<React.SetStateAction<T[]>>,
+    name: string,
+    setName: React.Dispatch<React.SetStateAction<string>>
   ) => {
-    setIncomes((prev) =>
-      prev.map((item) => {
-        if (item.id === id) {
-          const updated = { ...item, [field]: value };
-          // Recalculate amount if qty or rate changes
-          if (field === "qty" || field === "rate") {
-            updated.amount = updated.qty * updated.rate;
-          }
-          return updated;
-        }
-        return item;
-      })
-    );
-  };
-
-  const addExpenseItem = () => {
-    if (!newExpenseName) return;
-
-    const newItem: ExpenseItem = {
+    if (!name) return;
+    const newItem = {
       id: Date.now().toString(),
-      name: newExpenseName,
+      name,
       qty: 0,
       rate: 0,
       amount: 0,
-    };
-
-    setExpenses((prev) => [...prev, newItem]);
-    setNewExpenseName("");
+    } as T;
+    setFn((prev) => [...prev, newItem]);
+    setName("");
   };
 
-  const addIncomeItem = () => {
-    if (!newIncomeName) return;
-
-    const newItem: IncomeItem = {
-      id: Date.now().toString(),
-      name: newIncomeName,
-      qty: 0,
-      rate: 0,
-      amount: 0,
-    };
-
-    setIncomes((prev) => [...prev, newItem]);
-    setNewIncomeName("");
-  };
-
-  const removeExpenseItem = (id: string) => {
-    setExpenses((prev) => prev.filter((item) => item.id !== id));
-  };
-
-  const removeIncomeItem = (id: string) => {
-    setIncomes((prev) => prev.filter((item) => item.id !== id));
+  const removeItem = <T extends ExpenseItem | IncomeItem>(
+    setFn: React.Dispatch<React.SetStateAction<T[]>>,
+    id: string
+  ) => {
+    setFn((prev) => prev.filter((item) => item.id !== id));
   };
 
   return (
-    <div className="space-y-6">
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-4 md:gap-6">
-        {/* Expenses Section */}
-        <Card>
-          <CardHeader className="bg-[#f0c14b] p-3">
-            <CardTitle className="text-lg">Expenses</CardTitle>
-          </CardHeader>
-          <CardContent className="p-0">
-            <Table className="w-full overflow-x-auto">
-              <TableHeader>
-                <TableRow>
-                  <TableHead className="w-[120px] md:w-[180px]">ITEM</TableHead>
-                  <TableHead>QTY</TableHead>
-                  <TableHead>RATE</TableHead>
-                  <TableHead>AMOUNT</TableHead>
-                  <TableHead className="w-[50px]"></TableHead>
-                </TableRow>
-              </TableHeader>
-              <TableBody>
-                {expenses.map((item) => (
-                  <TableRow key={item.id}>
-                    <TableCell>
-                      <Input
-                        value={item.name}
-                        onChange={(e) =>
-                          updateExpenseItem(item.id, "name", e.target.value)
-                        }
-                        className="h-8 w-full text-sm"
-                      />
-                    </TableCell>
-                    <TableCell>
-                      <Input
-                        type="number"
-                        value={item.qty}
-                        onChange={(e) =>
-                          updateExpenseItem(
-                            item.id,
-                            "qty",
-                            Number(e.target.value)
-                          )
-                        }
-                        className="h-8 w-full text-sm"
-                      />
-                    </TableCell>
-                    <TableCell>
-                      <Input
-                        type="number"
-                        value={item.rate}
-                        onChange={(e) =>
-                          updateExpenseItem(
-                            item.id,
-                            "rate",
-                            Number(e.target.value)
-                          )
-                        }
-                        className="h-8 w-full text-sm"
-                      />
-                    </TableCell>
-                    <TableCell>{item.amount.toFixed(2)}</TableCell>
-                    <TableCell>
-                      <Button
-                        variant="ghost"
-                        size="icon"
-                        onClick={() => removeExpenseItem(item.id)}
-                        className="h-8 w-8"
-                      >
-                        <Trash2 className="h-4 w-4" />
-                      </Button>
-                    </TableCell>
-                  </TableRow>
-                ))}
-                <TableRow>
-                  <TableCell colSpan={5}>
-                    <div className="flex gap-2">
-                      <Input
-                        placeholder="New expense item"
-                        value={newExpenseName}
-                        onChange={(e) => setNewExpenseName(e.target.value)}
-                        className="h-8 w-full text-sm"
-                      />
-                      <Button
-                        variant="outline"
-                        size="sm"
-                        onClick={addExpenseItem}
-                        className="h-8"
-                      >
-                        <Plus className="h-4 w-4 mr-1" /> Add
-                      </Button>
-                    </div>
-                  </TableCell>
-                </TableRow>
-                <TableRow className="font-bold">
-                  <TableCell>TOTAL</TableCell>
-                  <TableCell colSpan={2}></TableCell>
-                  <TableCell>{totalExpense.toFixed(2)}</TableCell>
-                  <TableCell></TableCell>
-                </TableRow>
-              </TableBody>
-            </Table>
-          </CardContent>
-        </Card>
-
-        {/* Incomes Section */}
-        <Card>
-          <CardHeader className="bg-[#f0c14b] p-3">
-            <CardTitle className="text-lg">Incomes</CardTitle>
-          </CardHeader>
-          <CardContent className="p-0">
-            <Table className="w-full overflow-x-auto">
-              <TableHeader>
-                <TableRow>
-                  <TableHead className="w-[120px] md:w-[180px]">ITEM</TableHead>
-                  <TableHead>QTY</TableHead>
-                  <TableHead>RATE</TableHead>
-                  <TableHead>AMOUNT</TableHead>
-                  <TableHead className="w-[50px]"></TableHead>
-                </TableRow>
-              </TableHeader>
-              <TableBody>
-                {incomes.map((item) => (
-                  <TableRow key={item.id}>
-                    <TableCell>
-                      <Input
-                        value={item.name}
-                        onChange={(e) =>
-                          updateIncomeItem(item.id, "name", e.target.value)
-                        }
-                        className="h-8 w-full text-sm"
-                      />
-                    </TableCell>
-                    <TableCell>
-                      <Input
-                        type="number"
-                        value={item.qty}
-                        onChange={(e) =>
-                          updateIncomeItem(
-                            item.id,
-                            "qty",
-                            Number(e.target.value)
-                          )
-                        }
-                        className="h-8 w-full text-sm"
-                      />
-                    </TableCell>
-                    <TableCell>
-                      <Input
-                        type="number"
-                        value={item.rate}
-                        onChange={(e) =>
-                          updateIncomeItem(
-                            item.id,
-                            "rate",
-                            Number(e.target.value)
-                          )
-                        }
-                        className="h-8 w-full text-sm"
-                      />
-                    </TableCell>
-                    <TableCell>{item.amount.toFixed(2)}</TableCell>
-                    <TableCell>
-                      <Button
-                        variant="ghost"
-                        size="icon"
-                        onClick={() => removeIncomeItem(item.id)}
-                        className="h-8 w-8"
-                      >
-                        <Trash2 className="h-4 w-4" />
-                      </Button>
-                    </TableCell>
-                  </TableRow>
-                ))}
-                <TableRow>
-                  <TableCell colSpan={5}>
-                    <div className="flex gap-2">
-                      <Input
-                        placeholder="New income item"
-                        value={newIncomeName}
-                        onChange={(e) => setNewIncomeName(e.target.value)}
-                        className="h-8 w-full text-sm"
-                      />
-                      <Button
-                        variant="outline"
-                        size="sm"
-                        onClick={addIncomeItem}
-                        className="h-8"
-                      >
-                        <Plus className="h-4 w-4 mr-1" /> Add
-                      </Button>
-                    </div>
-                  </TableCell>
-                </TableRow>
-                <TableRow className="font-bold">
-                  <TableCell>TOTAL</TableCell>
-                  <TableCell colSpan={2}></TableCell>
-                  <TableCell>{totalIncome.toFixed(2)}</TableCell>
-                  <TableCell></TableCell>
-                </TableRow>
-              </TableBody>
-            </Table>
-          </CardContent>
-        </Card>
+    <div className="space-y-6 p-2 md:p-4">
+      <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
+        {[
+          {
+            title: "Total Expenses",
+            value: `${totalExpense.toLocaleString()} Rs`,
+            icon: <DollarSign className="h-4 w-4 text-muted-foreground" />,
+            desc: `For processing ${riceBags} bags of rice`,
+          },
+          {
+            title: "Total Income",
+            value: `${totalIncome.toLocaleString()} Rs`,
+            icon: <DollarSign className="h-4 w-4 text-muted-foreground" />,
+            desc: `From all by-products`,
+          },
+          {
+            title: "Rice Cost Per Bag",
+            value: `${riceCost.toFixed(2)} Rs`,
+            icon: <Package className="h-4 w-4 text-muted-foreground" />,
+            desc: "Per 26KG bag",
+          },
+        ].map(({ title, value, icon, desc }, idx) => (
+          <Card key={idx} className="shadow-md">
+            <CardHeader className="flex flex-row items-center justify-between pb-2">
+              <CardTitle className="text-sm font-medium">{title}</CardTitle>
+              {icon}
+            </CardHeader>
+            <CardContent>
+              <div className="text-xl font-bold">{value}</div>
+              <p className="text-xs text-muted-foreground">{desc}</p>
+            </CardContent>
+          </Card>
+        ))}
       </div>
 
-      {/* Summary Section */}
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-        <Card>
-          <CardContent className="p-4">
-            <div className="space-y-4">
-              <div className="grid grid-cols-2 gap-4">
-                <div>
-                  <Label htmlFor="gross-cost">GROSS COST</Label>
-                  <Input
-                    id="gross-cost"
-                    value={grossCost.toFixed(2)}
-                    readOnly
-                    className="bg-gray-100"
-                  />
-                </div>
-                <div>
-                  <Label htmlFor="rice-bags">NO OF RICE BAGS</Label>
-                  <Input
-                    id="rice-bags"
-                    type="number"
-                    value={riceBags}
-                    onChange={(e) => setRiceBags(Number(e.target.value))}
-                  />
-                </div>
-              </div>
+      <Tabs defaultValue="expenses" className="w-full">
+        <TabsList className="grid grid-cols-2 w-full">
+          <TabsTrigger value="expenses">Expenses</TabsTrigger>
+          <TabsTrigger value="income">Income</TabsTrigger>
+        </TabsList>
+
+        {[
+          {
+            key: "expenses",
+            data: expenses,
+            setFn: setExpenses,
+            newName: newExpenseName,
+            setName: setNewExpenseName,
+          },
+          {
+            key: "income",
+            data: incomes,
+            setFn: setIncomes,
+            newName: newIncomeName,
+            setName: setNewIncomeName,
+          },
+        ].map(({ key, data, setFn, newName, setName }) => (
+          <TabsContent key={key} value={key} className="mt-4">
+            <Card className="shadow-md">
+              <CardHeader className="bg-rice-green-50 dark:bg-rice-green-900/20 py-3">
+                <CardTitle className="text-lg font-semibold capitalize">
+                  {key}
+                </CardTitle>
+              </CardHeader>
+              <CardContent className="p-2 overflow-x-auto">
+                <Table className="min-w-[600px]">
+                  <TableHeader>
+                    <TableRow>
+                      <TableHead>ITEM</TableHead>
+                      <TableHead>QTY</TableHead>
+                      <TableHead>RATE</TableHead>
+                      <TableHead>AMOUNT</TableHead>
+                      <TableHead></TableHead>
+                    </TableRow>
+                  </TableHeader>
+                  <TableBody>
+                    {data.map((item) => (
+                      <TableRow key={item.id}>
+                        <TableCell>
+                          <Input
+                            value={item.name}
+                            onChange={(e) =>
+                              updateItem(setFn, item.id, "name", e.target.value)
+                            }
+                            className="h-8 text-sm min-w-0"
+                          />
+                        </TableCell>
+                        <TableCell>
+                          <Input
+                            type="number"
+                            value={item.qty}
+                            onChange={(e) =>
+                              updateItem(
+                                setFn,
+                                item.id,
+                                "qty",
+                                Number(e.target.value)
+                              )
+                            }
+                            className="h-8 text-sm"
+                          />
+                        </TableCell>
+                        <TableCell>
+                          <Input
+                            type="number"
+                            value={item.rate}
+                            onChange={(e) =>
+                              updateItem(
+                                setFn,
+                                item.id,
+                                "rate",
+                                Number(e.target.value)
+                              )
+                            }
+                            className="h-8 text-sm"
+                          />
+                        </TableCell>
+                        <TableCell className="text-sm font-mono">
+                          {item.amount.toFixed(2)}
+                        </TableCell>
+                        <TableCell>
+                          <Button
+                            variant="ghost"
+                            size="icon"
+                            onClick={() => removeItem(setFn, item.id)}
+                            className="h-8 w-8"
+                          >
+                            <Trash2 className="h-4 w-4" />
+                          </Button>
+                        </TableCell>
+                      </TableRow>
+                    ))}
+                    <TableRow>
+                      <TableCell colSpan={5}>
+                        <div className="flex gap-2">
+                          <Input
+                            placeholder={`New ${key} item`}
+                            value={newName}
+                            onChange={(e) => setName(e.target.value)}
+                            className="h-8 w-full text-sm"
+                          />
+                          <Button
+                            variant="outline"
+                            size="sm"
+                            onClick={() => addItem(setFn, newName, setName)}
+                            className="h-8"
+                          >
+                            <Plus className="h-4 w-4 mr-1" /> Add
+                          </Button>
+                        </div>
+                      </TableCell>
+                    </TableRow>
+                  </TableBody>
+                </Table>
+              </CardContent>
+            </Card>
+          </TabsContent>
+        ))}
+      </Tabs>
+
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
+        <Card className="shadow-md">
+          <CardHeader className="bg-rice-green-50 dark:bg-rice-green-900/20 py-3">
+            <CardTitle className="text-lg font-semibold">
+              Cost Summary
+            </CardTitle>
+          </CardHeader>
+          <CardContent className="p-4 space-y-4">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <div>
-                <Label htmlFor="rice-cost">RICE COST/26KG BAG</Label>
+                <Label htmlFor="gross-cost">GROSS COST</Label>
                 <Input
-                  id="rice-cost"
-                  value={riceCost.toFixed(8)}
+                  id="gross-cost"
+                  value={grossCost.toFixed(2)}
                   readOnly
-                  className="bg-[#a6d3e8] font-bold"
+                  className="bg-muted/50 font-medium"
                 />
               </div>
+              <div>
+                <Label htmlFor="rice-bags">NO OF RICE BAGS</Label>
+                <Input
+                  id="rice-bags"
+                  type="number"
+                  value={riceBags}
+                  onChange={(e) => setRiceBags(Number(e.target.value))}
+                />
+              </div>
+            </div>
+            <div>
+              <Label htmlFor="rice-cost">RICE COST/26KG BAG</Label>
+              <Input
+                id="rice-cost"
+                value={riceCost.toFixed(8)}
+                readOnly
+                className="bg-rice-green-100 dark:bg-rice-green-900/30 font-bold"
+              />
             </div>
           </CardContent>
         </Card>
 
-        <Card>
-          <CardContent className="p-4">
-            <Table className="w-full overflow-x-auto">
+        <Card className="shadow-md">
+          <CardHeader className="bg-rice-green-50 dark:bg-rice-green-900/20 py-3 flex justify-between items-center">
+            <CardTitle className="text-lg font-semibold">
+              Output Analysis
+            </CardTitle>
+            <BarChart3 className="h-5 w-5 text-muted-foreground" />
+          </CardHeader>
+          <CardContent className="p-4 overflow-x-auto">
+            <Table className="min-w-[300px]">
               <TableHeader>
                 <TableRow>
                   <TableHead>PRODUCT</TableHead>
@@ -439,42 +388,25 @@ export default function page() {
               <TableBody>
                 {outputs.map((item, index) => (
                   <TableRow key={index}>
-                    <TableCell>
-                      <Input
-                        value={item.product}
-                        onChange={(e) =>
-                          setOutputs((prev) =>
-                            prev.map((output, i) =>
-                              i === index
-                                ? { ...output, product: e.target.value }
-                                : output
-                            )
-                          )
-                        }
-                        className="h-8 w-full text-sm"
-                      />
-                    </TableCell>
+                    <TableCell>{item.product}</TableCell>
                     <TableCell>
                       <Input
                         type="number"
                         value={item.outTurn}
-                        onChange={(e) =>
-                          setOutputs((prev) =>
-                            prev.map((output, i) =>
-                              i === index
-                                ? { ...output, outTurn: Number(e.target.value) }
-                                : output
-                            )
-                          )
-                        }
-                        className="h-8 w-full text-sm"
+                        onChange={(e) => {
+                          const updatedOutputs = [...outputs];
+                          updatedOutputs[index].outTurn =
+                            parseFloat(e.target.value) || 0;
+                          setOutputs(updatedOutputs);
+                        }}
+                        className="h-8 text-sm font-mono"
                       />
                     </TableCell>
                   </TableRow>
                 ))}
                 <TableRow className="font-bold">
                   <TableCell>TOTAL OUT TURN</TableCell>
-                  <TableCell className="bg-[#f0e14b]">
+                  <TableCell className="font-mono">
                     {totalOutTurn.toFixed(8)}
                   </TableCell>
                 </TableRow>
@@ -482,48 +414,46 @@ export default function page() {
             </Table>
           </CardContent>
         </Card>
+
+
+        <Dialog open={showSaveModal} onOpenChange={setShowSaveModal}>
+          <DialogContent>
+            <DialogHeader>
+              <DialogTitle>Confirm Save</DialogTitle>
+            </DialogHeader>
+            <div className="space-y-2 text-sm">
+              <p>
+                <strong>Total Expense:</strong> ₹{totalExpense.toFixed(2)}
+              </p>
+              <p>
+                <strong>Total Income:</strong> ₹{totalIncome.toFixed(2)}
+              </p>
+              <p>
+                <strong>Gross Cost:</strong> ₹{grossCost.toFixed(2)}
+              </p>
+              <p>
+                <strong>Rice Bags:</strong> {riceBags}
+              </p>
+              <p>
+                <strong>Rice Cost per 26kg Bag:</strong> ₹{riceCost.toFixed(8)}
+              </p>
+              <p>
+                <strong>Total Out Turn:</strong> {totalOutTurn.toFixed(8)}
+              </p>
+            </div>
+            <DialogFooter>
+              <Button className="-mb-2 w-full" onClick={handleSave}>
+                Save Data
+              </Button>
+            </DialogFooter>
+          </DialogContent>
+        </Dialog>
       </div>
       <div className="flex justify-center">
-        <Button onClick={() => setShowSaveModal(true)} className="px-6 py-2">
-          Save Data
-        </Button>
-      </div>
-
-      <Dialog open={showSaveModal} onOpenChange={setShowSaveModal}>
-        <DialogContent>
-          <DialogHeader>
-            <DialogTitle>Confirm Save</DialogTitle>
-          </DialogHeader>
-          <div className="space-y-2 text-sm">
-            <p>
-              <strong>Total Expense:</strong> ₹{totalExpense.toFixed(2)}
-            </p>
-            <p>
-              <strong>Total Income:</strong> ₹{totalIncome.toFixed(2)}
-            </p>
-            <p>
-              <strong>Gross Cost:</strong> ₹{grossCost.toFixed(2)}
-            </p>
-            <p>
-              <strong>Rice Bags:</strong> {riceBags}
-            </p>
-            <p>
-              <strong>Rice Cost per 26kg Bag:</strong> ₹{riceCost.toFixed(8)}
-            </p>
-            <p>
-              <strong>Total Out Turn:</strong> {totalOutTurn.toFixed(8)}
-            </p>
-          </div>
-          <DialogFooter>
-            <Button className="-mb-2 w-full" onClick={handleSave}>
-              Save Data
-            </Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
-      <div className="text-center text-xs mt-10">Developed by GuruF❤️</div>
+          <Button onClick={() => setShowSaveModal(true)} className="px-10 py-2">
+            Save Data
+          </Button>
+        </div>
     </div>
   );
 }
-
-
